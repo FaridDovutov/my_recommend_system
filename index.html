@@ -291,6 +291,50 @@
             color: white;
             border-color: rgba(255,255,255,0.2);
         }
+        /* ... ваш предыдущий код стилей ... */
+
+        /* Адаптация для мобильных устройств */
+        @media (max-width: 600px) {
+            body {
+                padding: 25px 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .control-panel {
+                flex-direction: column; /* Выстраиваем элементы вертикально */
+                align-items: stretch;   /* Растягиваем их по ширине */
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .input-wrapper, 
+            input[type="number"], 
+            button {
+                width: 100%;            /* Элементы занимают всю ширину контейнера */
+                box-sizing: border-box;
+            }
+
+            .movie-card {
+                flex-direction: column; /* На очень узких экранах карточка тоже станет вертикальной */
+                align-items: start;
+                gap: 15px;
+                padding: 16px;
+            }
+
+            .movie-details {
+                max-width: 100%;
+            }
+
+            .rating-block {
+                width: 100%;
+                justify-content: space-between; /* Рейтинг и кнопка Инфо распределятся по краям */
+            }
+        }
+    </style>
+</head>
     </style>
 </head>
 <body>
