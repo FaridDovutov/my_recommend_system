@@ -1,12 +1,12 @@
 import os
 import pickle
+import urllib.request  # Добавьте этот встроенный модуль в самый верх файла
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 
-# Настройка CORS, чтобы запросы точно проходили
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,23 +15,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Автоматическое определение системных путей внутри сервера Render
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "svd_recommendation_model.pkl")
 MOVIES_PATH = os.path.join(BASE_DIR, "u.item")
 
-# 1. Безопасная загрузка модели SVD
+# Ссылка на оригинальный файл в репозитории GroupLens (University of Minnesota)
+MOVIELENS_URL = "https://files.grouplens.org/datasets/movielens/ml-100k/u.item"
+
+# АВТОДОУНЛОАД: Если файла u.item нет, сервер скачает его сам
+if not os.path.exists(MOVIES_PATH):
+    print("Файл u.item нарандааст. Боргузории автоматӣ аз сервери MovieLens...")
+    try:
+        urllib.request.urlretrieve(MOVIELENS_URL, MOVIES_PATH)
+        print("Файл u.item бомуваффақият боргузорӣ шуд!")
+    except Exception as e:
+        print(f"Хатогии боргузории файл: {e}")
+
+# Дальнейшая загрузка модели SVD
 model = None
 if os.path.exists(MODEL_PATH):
     with open(MODEL_PATH, "rb") as f:
         model = pickle.load(f)
-else:
-    print(f"ВНИМАНИЕ: Файл модели не найден по пути: {MODEL_PATH}")
 
-# 2. Правильное чтение u.item с учетом кодировки MovieLens
+# Чтение названий фильмов из u.item (теперь он точно будет существовать)
 movie_titles = {}
 if os.path.exists(MOVIES_PATH):
-    # Используем ISO-8859-1, так как в MovieLens есть западноевропейские символы
     with open(MOVIES_PATH, "r", encoding="ISO-8859-1") as f:
         for line in f:
             parts = line.split("|")
