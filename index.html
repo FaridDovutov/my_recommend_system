@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Системаи тавсиявӣ дар асоси ИС</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #161d30;
+            --accent-color: #e50914; /* Кинематографический красный */
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --rating-gold: #fbbf24;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 50px 20px;
+            background: radial-gradient(circle at top, #1e2640 0%, #0b0f19 70%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        /* Панель управления / Поиск */
+        .control-panel {
+            background: rgba(22, 29, 48, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input[type="number"] {
+            width: 240px;
+            padding: 14px 16px;
+            background-color: rgba(11, 15, 25, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(229, 9, 20, 0.2);
+        }
+
+        button {
+            padding: 14px 28px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        button:hover {
+            background-color: #ff1f29;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.4);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        /* Состояния загрузки и ошибок */
+        .loader {
+            display: none;
+            text-align: center;
+            font-size: 16px;
+            color: var(--text-muted);
+            margin: 30px 0;
+        }
+
+        .loader::after {
+            content: "";
+            display: block;
+            width: 30px;
+            height: 30px;
+            margin: 10px auto;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #ef4444;
+            text-align: center;
+            display: none;
+            padding: 15px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            margin-bottom: 20px;
+        }
+
+        /* Сетка результатов */
+        .results-section {
+            display: none;
+        }
+
+        .results-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .results-title::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        /* Карточка фильма в стиле онлайн-кинотеатра */
+        .movie-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .movie-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--accent-color), #b91c1c);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .movie-card:hover::before {
+            opacity: 1;
+        }
+
+        .movie-details {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 70%;
+        }
+
+        .movie-title {
+            font-size: 19px;
+            font-weight: 600;
+            color: white;
+            text-decoration: none;
+            transition: color 0.2s;
+            display: inline-block;
+        }
+
+        .movie-title:hover {
+            color: #ff4b55;
+        }
+
+        .movie-meta {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .movie-id-badge {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Блок оценки (Рейтинг) */
+        .rating-block {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .rating-badge {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            color: var(--rating-gold);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .rating-badge::before {
+            content: "★";
+            font-size: 14px;
+        }
+
+        .info-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 14px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .info-link:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border-color: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Системаи тавсиявии синамоӣ</h1>
+        <p class="subtitle">Панели корбарӣ барои намоиши тавсияҳои фардӣ дар асоси алгоритми SVD</p>
+    </header>
+
+    <div class="control-panel">
+        <div class="input-wrapper">
+            <input type="number" id="userIdInput" placeholder="ID-и корбарро ворид кунед" min="1" value="1">
+        </div>
+        <button onclick="fetchRecommendations()">Тавсияҳоро нишон диҳед</button>
+    </div>
+
+    <div class="loader" id="loader"></div>
+    <div class="error-message" id="errorMessage">Хатогӣ ҳангоми пайвастшавӣ ба сервери марказӣ.</div>
+
+    <section class="results-section" id="resultsSection">
+        <h2 class="results-title" id="resultsTitle">Филмҳои мувофиқ барои шумо:</h2>
+        <div class="recommendations-grid" id="recommendationsGrid">
+            </div>
+    </section>
+</div>
+
+<script>
+    async function fetchRecommendations() {
+        const userId = document.getElementById('userIdInput').value;
+        const loader = document.getElementById('loader');
+        const errorMsg = document.getElementById('errorMessage');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsTitle = document.getElementById('resultsTitle');
+        const gridContainer = document.getElementById('recommendationsGrid');
+
+        if (!userId) {
+            alert("Лутфан, Идентификатори корбарро (ID) ворид кунед!");
+            return;
+        }
+
+        loader.style.display = 'block';
+        errorMsg.style.display = 'none';
+        resultsSection.style.display = 'none';
+        gridContainer.innerHTML = '';
+
+        const apiUrl = `/recommend/${userId}`;
+
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error("Хатогии сервер");
+            
+            const data = await response.json();
+            
+            loader.style.display = 'none';
+            resultsTitle.innerText = `Топ-5 филмҳои тавсияшаванда барои корбари №${data.user_id}`;
+            resultsSection.style.display = 'block';
+
+            data.recommendations.forEach(movie => {
+                // Создание безопасной динамической поисковой ссылки на Google для конкретного фильма
+                const movieSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(movie.movie_name + ' movie')}`;
+                
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+
+                card.innerHTML = `
+                    <div class="movie-details">
+                        <a href="${movieSearchUrl}" target="_blank" class="movie-title" title="Ҷустуҷӯи филм дар Google">
+                            ${movie.movie_name}
+                        </a>
+                        <div class="movie-meta">
+                            <span class="movie-id-badge">ID: ${movie.item_id}</span>
+                            <span>Синамои классикӣ</span>
+                        </div>
+                    </div>
+                    <div class="rating-block">
+                        <div class="rating-badge" title="Баҳогузории эҳтимолии зеҳни сунъӣ">
+                            ${movie.estimated_rating.toFixed(2)}
+                        </div>
+                        <a href="${movieSearchUrl}" target="_blank" class="info-link">Маълумот</a>
+                    </div>
+                `;
+                gridContainer.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("Error:", error);
+            loader.style.display = 'none';
+            errorMsg.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>
